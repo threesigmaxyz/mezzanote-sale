@@ -1,0 +1,17 @@
+# directories
+**/node_modules
+**/out
+**/cache
+**/bin
+broadcast/
+docs/
+
+# files
+.gas-snapshot
+*.env
+*.encryptedKey
+*.log
+.DS_Store
+src/.DS_Store
+lcov.info
+package-lock.json
