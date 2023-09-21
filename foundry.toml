@@ -3,7 +3,7 @@ src             = 'src'     # The source directory
 test            = 'test'    # The test directory
 out             = 'out'     # The ouput directory
 libs            = ['lib']   # A list of library directories
-solc_version    = '0.8.13'   # Override for the solc version (setting this ignores `auto_detect_solc`)
+solc_version    = '0.8.20'   # Override for the solc version (setting this ignores `auto_detect_solc`)
 optimizer       = true     # Enable or disable the solc optimizer
 optimizer_runs  = 200       # The number of optimizer runs
 verbosity       = 3         # The verbosity of tests
@@ -21,7 +21,7 @@ number_underscore                = "thousands"  # Style of underscores in number
 
 [doc]
 out    = "docs"             # An output path for generated documentation.
-title  = "Defimons Starter Monsters" # Title for the generated documentation.
+title  = "Mezzanote Sale"   # Title for the generated documentation.
 book   = "./book.toml"      # Path to user provided book.toml.
 ignore = []                 # List of files to ignore when generating documentation.
 

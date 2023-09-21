@@ -7,7 +7,6 @@ contract MerkleTreeTest is Test {
     string filename;
     uint256 addressesLength;
     address[] addresses;
-    uint256[] amounts;
     bytes32 root;
     uint32[] proofsLength;
     bytes32[][] merkleProofs;
@@ -35,16 +34,13 @@ contract MerkleTreeTest is Test {
 
         bytes memory res = vm.ffi(inputs);
 
-        uint8 _offset = 52;
+        uint8 _offset = 20;
         bytes20 addressAux;
-        bytes32 amountAux;
         for (uint256 i = 32; i <= res.length + 32 - _offset; i = i + _offset) {
             assembly {
                 addressAux := mload(add(res, i))
-                amountAux := mload(add(res, add(i, 20)))
             }
             addresses.push(address(addressAux));
-            amounts.push(uint256(amountAux));
         }
     }
 

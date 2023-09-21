@@ -73,7 +73,7 @@ class EventHandler:
     
     
     def GetEventsFromCsv(self):
-        with open('Data/Events.csv', 'r') as f:
+        with open('Data/Events'+str(self.contractAddress)+'.csv', 'r') as f:
             for row in csv.DictReader(f, skipinitialspace=True):
                 self.allEvents.append({k: v for k, v in row.items()})
         return self.allEvents
@@ -83,7 +83,7 @@ class EventHandler:
     This function saves the events to a csv file
     """
     def __SaveEventsToCSV(self):
-        with open('Data/Events.csv', 'a+') as f:
+        with open('Data/Events'+str(self.contractAddress)+'.csv', 'w+') as f:
             writer = csv.DictWriter(f, fieldnames=dict.keys(self.allEvents[0]))
             writer.writeheader()
             for event in self.allEvents:

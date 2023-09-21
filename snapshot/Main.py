@@ -2,10 +2,23 @@ from EventHandler import EventHandler
 from Owners import FindAndSaveOwnersWithBlockNumber, SaveOwnersSnapshot
 from decouple import config
 
+# SIM2
+CONTRACT_ADDRESS_1 = "0x243d558472eF7030aFe3675Bb0a6f9Fb7cE39E13"
+CREATION_BLOCK_1 = 16200347
+# Dropicall
+CONTRACT_ADDRESS_2 = "0x8b82D758a95c84Bc5476244f91e9AC6478d2a8B0"
+CREATION_BLOCK_2 = 14499075
+# WHITEHEARTS
+CONTRACT_ADDRESS_3 = "0x4577fcfB0642afD21b5f2502753ED6D497B830E9"
+CREATION_BLOCK_3 = 15737633
+# SIMCARD1
+CONTRACT_ADDRESS_4 = "0x8b6DCfB251bef4953cF3f3A8C66Af870e6b7466e"
+CREATION_BLOCK_4 = 15455843
+# UnchainedMilady
+CONTRACT_ADDRESS_5 = "0x25f23845F9F278338138B9224b62dF7DF5398A4d"
+CREATION_BLOCK_5 = 17369732
 
-CONTRACT_ADDRESS = "0x6e1404A557850551EDaA9fD1311c9297BAF7bD52"
-CREATION_BLOCK = 15308312 # Creation Block
-TOBLOCK = 16869663	 # Current block
+TOBLOCK = 18109401	 # Timistamp for holder's snapshot (Sep-11-2023)
 ETHERSCAN_API_KEY = config('ETHERSCAN_KEY')
 NODE_URL = config('RPC_URL_MAINNET')
 
@@ -21,14 +34,49 @@ def addEvent(allEvents, event):
 
 
 def main():
-    eventHandler = EventHandler(CONTRACT_ADDRESS, CREATION_BLOCK, NODE_URL, ETHERSCAN_API_KEY)
+
     eventList = ["Transfer"]
     updateFunctionList = [addEvent]
-    allEvents = eventHandler.GetAndSaveOrderedEvents(eventList, updateFunctionList) 
-    allEvents = eventHandler.GetEventsFromCsv()
-    timestamp = eventHandler.w3.eth.getBlock(TOBLOCK).timestamp
-    FindAndSaveOwnersWithBlockNumber(allEvents)
-    SaveOwnersSnapshot(timestamp, ETHERSCAN_API_KEY)
+
+    eventHandler1 = EventHandler(CONTRACT_ADDRESS_1, CREATION_BLOCK_1, NODE_URL, ETHERSCAN_API_KEY)
+    allEvents1 = eventHandler1.GetAndSaveOrderedEvents(eventList, updateFunctionList)
+    allEvents1 = eventHandler1.GetEventsFromCsv()
+
+    eventHandler2 = EventHandler(CONTRACT_ADDRESS_2, CREATION_BLOCK_2, NODE_URL, ETHERSCAN_API_KEY)
+    allEvents2 = eventHandler2.GetAndSaveOrderedEvents(eventList, updateFunctionList)
+    allEvents2 = eventHandler2.GetEventsFromCsv()
+
+    eventHandler3 = EventHandler(CONTRACT_ADDRESS_3, CREATION_BLOCK_3, NODE_URL, ETHERSCAN_API_KEY)
+    allEvents3 = eventHandler3.GetAndSaveOrderedEvents(eventList, updateFunctionList)
+    allEvents3 = eventHandler3.GetEventsFromCsv()
+
+    eventHandler4 = EventHandler(CONTRACT_ADDRESS_4, CREATION_BLOCK_4, NODE_URL, ETHERSCAN_API_KEY)
+    allEvents4 = eventHandler4.GetAndSaveOrderedEvents(eventList, updateFunctionList)
+    allEvents4 = eventHandler4.GetEventsFromCsv()
+
+    eventHandler5 = EventHandler(CONTRACT_ADDRESS_5, CREATION_BLOCK_5, NODE_URL, ETHERSCAN_API_KEY)
+    allEvents5 = eventHandler5.GetAndSaveOrderedEvents(eventList, updateFunctionList) 
+    allEvents5 = eventHandler5.GetEventsFromCsv()
+
+    timestamp = eventHandler1.w3.eth.getBlock(TOBLOCK).timestamp
+
+    open('Data/OwnersSnapshot.csv', 'w+').close() # Reset 'OwnersSnapshot.csv' file
+
+    FindAndSaveOwnersWithBlockNumber(eventHandler1.contractAddress, allEvents1)
+    SaveOwnersSnapshot(eventHandler1.contractAddress, timestamp, ETHERSCAN_API_KEY)
+
+    FindAndSaveOwnersWithBlockNumber(eventHandler2.contractAddress, allEvents2)
+    SaveOwnersSnapshot(eventHandler2.contractAddress, timestamp, ETHERSCAN_API_KEY)
+
+    FindAndSaveOwnersWithBlockNumber(eventHandler3.contractAddress, allEvents3)
+    SaveOwnersSnapshot(eventHandler3.contractAddress, timestamp, ETHERSCAN_API_KEY)
+
+    FindAndSaveOwnersWithBlockNumber(eventHandler4.contractAddress, allEvents4)
+    SaveOwnersSnapshot(eventHandler4.contractAddress, timestamp, ETHERSCAN_API_KEY)
+
+    FindAndSaveOwnersWithBlockNumber(eventHandler5.contractAddress, allEvents5)
+    SaveOwnersSnapshot(eventHandler5.contractAddress, timestamp, ETHERSCAN_API_KEY)
+    
 
 
 if __name__ == "__main__":

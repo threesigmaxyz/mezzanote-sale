@@ -6,11 +6,12 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { ONFT721 } from "./dependencies/omnichain/token/onft/ONFT721.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-/// @title Defimons Starter Monsters
-/// @notice This contract mints Defimons Starter Monsters on sales started and parametrized by the owner.
-contract DefimonsStarterMonsters is ONFT721 {
+/// @title Mezzanote Sales contract
+/// @notice This contract mints Mezanote NFTs on sales started and parametrized by the owner.
+contract MezzanoteSale is ERC721, Ownable {
     //
     // Using Statements
     //
@@ -57,12 +58,6 @@ contract DefimonsStarterMonsters is ONFT721 {
     /// Throws when the owner is changing the max mint supply and the value is the same as the previous one
     error StaleMaxMintUpdateError();
 
-    /// Throws when the number of addresses and amounts given in the owner mint are not the same
-    error AddressessAmountsLengthsMismatchError();
-
-    /// Throws when the owner tries to mint tokens for 0 users
-    error ZeroUsersToMintError();
-
     /// Throws when an address to mint for is 0
     error ZeroAddressError();
 
@@ -101,30 +96,6 @@ contract DefimonsStarterMonsters is ONFT721 {
     );
 
     /*
-     * @notice Emitted when a sale is edited
-     * @param saleId The sale's ID
-     * @param start The sale's start time
-     * @param finish The sale's finish time
-     * @param limit The sale's limit per user (applicable only for public sales)
-     * @param price The sale's price
-     * @param whitelist Whether the sale is of type whitelist or not
-     * @param root The sale's merkle root (does not matter for public sales)
-     * @param hasMaxMint Whether the sale has a max mint or not
-     * @param maxMint The sale's max mint (does not matter if hasMaxMint is false)
-     */
-    event LogSaleEdited(
-        uint256 indexed saleId,
-        uint64 start,
-        uint64 finish,
-        uint8 limit,
-        uint64 price,
-        bool whitelist,
-        bytes32 root,
-        bool hasMaxMint,
-        uint40 maxMint
-    );
-
-    /*
      * @notice Emitted when tokens are sold on a sale
      * @param saleId The sale's ID
      * @param to The address that bought the token
@@ -139,8 +110,6 @@ contract DefimonsStarterMonsters is ONFT721 {
     event LogSetMaxMint(uint256 prevMaxMint, uint256 newMaxMint);
 
     event LogRefund(uint256 indexed saleId, address indexed to, uint256 value);
-
-    event LogOwnerMint(address[] users, uint256[] amounts);
 
     //
     // Structs
@@ -177,6 +146,15 @@ contract DefimonsStarterMonsters is ONFT721 {
     // State
     //
 
+    // Duration of the whitelist sale
+    uint64 constant DURATION_WHITELIST = 2 hours;
+    // Duration of the public sale.
+    uint64 constant DURATION_PUBLIC = 2 hours;
+    // The sales limit of NFTs per user.
+    uint8 constant LIMIT = 10;
+    // The NFT price on the sales.
+    uint64 constant PRICE = 0.069 ether;
+
     /// Max total mint
     uint256 public maxMint;
 
@@ -209,18 +187,27 @@ contract DefimonsStarterMonsters is ONFT721 {
 
     /// @param name_ The name of the NFT
     /// @param symbol_ The symbol of the NFT
-    /// @param lzEndpoint_ The endpoint of the LayerZero endpoint
+    /// @param startSales_ The start of the sales.
+    /// @param whitelistRoot_ For the whitelist sale, this parameter defines the merkle root to be used for verification.
     /// @param initialURI_ The initial base URI
-    /// @param maxMint_ The total maximum number of NFTs that can be minted
+    /// @param maxMint_ The total maximum number of NFTs that can be minted. 555 supply.
     constructor(
         string memory name_,
         string memory symbol_,
-        address lzEndpoint_,
+        uint64 startSales_,
+        bytes32 whitelistRoot_,
         string memory initialURI_,
         uint256 maxMint_
-    ) ONFT721(name_, symbol_, lzEndpoint_) {
+    ) ERC721(name_, symbol_) Ownable(_msgSender()) {
         setURI(initialURI_);
         setMaxMint(maxMint_);
+
+        uint64 startPublic_ = startSales_ + DURATION_WHITELIST;
+
+        // Whitelist Sale
+        addSale(startSales_, startPublic_ - 1, LIMIT, PRICE, true, whitelistRoot_, false, 0);
+        // Public Sale
+        addSale(startPublic_, startPublic_ + DURATION_PUBLIC, LIMIT, PRICE, false, 0, false, 0);
     }
 
     //
@@ -255,7 +242,7 @@ contract DefimonsStarterMonsters is ONFT721 {
         bytes32 root_,
         bool hasMaxMint_,
         uint40 maxMint_
-    ) external onlyOwner {
+    ) private onlyOwner {
         // sale Id does not matter when adding a sale
         _validateSaleParams(start_, finish_, whitelist_, root_, hasMaxMint_, maxMint_);
 
@@ -274,49 +261,6 @@ contract DefimonsStarterMonsters is ONFT721 {
         emit LogSaleCreated(
             _sales.length - 1, start_, finish_, _limit, _price, whitelist_, root_, hasMaxMint_, maxMint_
         );
-    }
-
-    /// @notice Edits a Sale Phase. Can't change the hasMaxMint property, only the maxMint property.
-    /// @dev Can only be called by the contract owner.
-    /// @param saleId_ The unique ID of the sale to be edited
-    /// @param start_ The new start time we want the sale to have
-    /// @param finish_ The new end time we want the sale to have
-    /// @param _limit The new limit of NFTs we want the sale to have
-    /// @param _price The new price we want the NFTs to have
-    /// @param whitelist_ Whether it is a whitelist sale
-    /// @param root_ Defines the root to be used for whitelist verification
-    /// @param maxMint_ The new max mint we want the sale to have
-    /// If we want any Sale parameter to stay unchanged, send the same value as a parameter to the function
-    function editSale(
-        uint256 saleId_,
-        uint64 start_,
-        uint64 finish_,
-        uint8 _limit,
-        uint64 _price,
-        bool whitelist_,
-        bytes32 root_,
-        uint40 maxMint_
-    ) external onlyOwner {
-        if (saleId_ >= _sales.length) revert SaleNotFoundError(saleId_);
-
-        Sale memory sale_ = _sales[saleId_];
-
-        _validateSaleParams(start_, finish_, whitelist_, root_, sale_.hasMaxMint, maxMint_);
-        if (sale_.hasMaxMint && maxMint_ < sale_.maxMint) {
-            maxMint_ = uint40(Math.max(maxMint_, _mintedTotal[saleId_]));
-        }
-
-        sale_.start = start_;
-        sale_.finish = finish_;
-        sale_.limit = _limit;
-        sale_.price = _price;
-        sale_.whitelist = whitelist_;
-        sale_.root = root_;
-        sale_.maxMint = maxMint_;
-
-        _sales[saleId_] = sale_;
-
-        emit LogSaleEdited(saleId_, start_, finish_, _limit, _price, whitelist_, root_, sale_.hasMaxMint, maxMint_);
     }
 
     /// @notice Withdraws any ETH sent to this contract.
@@ -393,77 +337,23 @@ contract DefimonsStarterMonsters is ONFT721 {
     /// @param saleId_ The ID of the sale to mint from
     /// @param user_ The user to mint to
     /// @param quantity_ The quantity of NFTs to mint
-    /// @param proof_ Zero for public sales
-    function publicSaleMint(uint256 saleId_, address user_, uint256 quantity_, bytes32[] calldata proof_)
-        external
-        payable
-    {
-        _saleMint(saleId_, user_, 0, quantity_, proof_);
+    function publicSaleMint(uint256 saleId_, address user_, uint256 quantity_) external payable {
+        _saleMint(saleId_, user_, quantity_, new bytes32[](0));
     }
 
     /// @notice Users can mint a quantity bounded by the number of apartments they bought.
     /// @param saleId_ The ID of the sale to mint from.
     /// @param user_ The user to mint to.
-    /// @param userAllowanceFromApartmentMints_ The number of apartments the user bought.
     /// @param quantity_ The quantity of NFTs to mint.
     /// @param proof_ The proof of the user's whitelisting.
-    function whitelistSaleMint(
-        uint256 saleId_,
-        address user_,
-        uint256 userAllowanceFromApartmentMints_,
-        uint256 quantity_,
-        bytes32[] calldata proof_
-    ) external payable {
-        _saleMint(saleId_, user_, userAllowanceFromApartmentMints_, quantity_, proof_);
+    function whitelistSaleMint(uint256 saleId_, address user_, uint256 quantity_, bytes32[] memory proof_)
+        external
+        payable
+    {
+        _saleMint(saleId_, user_, quantity_, proof_);
     }
 
-    /**
-     * @notice Mints NFTs to a list of users
-     * @dev Only callable by the owner
-     * @param users_ The list of users to mint to
-     * @param quantities_ The list of quantities to mint
-     */
-    function ownerMint(address[] calldata users_, uint256[] calldata quantities_) external onlyOwner {
-        if (users_.length == 0) revert ZeroUsersToMintError();
-        if (users_.length != quantities_.length) revert AddressessAmountsLengthsMismatchError();
-
-        // validate total mint limit
-        uint256 mintedBefore_ = nextToMint;
-
-        // mint NFTs
-        uint256 mintedOnThisCall_;
-        for (uint256 i_; i_ < users_.length;) {
-            if (users_[i_] == address(0)) revert ZeroAddressError();
-            if (quantities_[i_] == 0) revert ZeroMintQuantityError();
-            for (uint256 j_; j_ < quantities_[i_];) {
-                _mint(users_[i_], mintedBefore_ + mintedOnThisCall_);
-                unchecked {
-                    ++mintedOnThisCall_;
-                    ++j_;
-                }
-            }
-            unchecked {
-                ++i_;
-            }
-        }
-
-        // update nextToMint
-        nextToMint = mintedBefore_ + mintedOnThisCall_;
-
-        // update maxMint if needed - maxMint is the maximum tokenId that can be minted
-        if (mintedBefore_ + mintedOnThisCall_ - 1 > maxMint) maxMint = mintedBefore_ + mintedOnThisCall_ - 1;
-
-        // emit event
-        emit LogOwnerMint(users_, quantities_);
-    }
-
-    function _saleMint(
-        uint256 saleId_,
-        address user_,
-        uint256 userAllowanceFromApartmentMints_,
-        uint256 quantity_,
-        bytes32[] calldata proof_
-    ) internal {
+    function _saleMint(uint256 saleId_, address user_, uint256 quantity_, bytes32[] memory proof_) internal {
         // check if sale is registered and quantity is grater than zero
         if (saleId_ >= _sales.length) revert SaleNotFoundError(saleId_);
         if (quantity_ == 0) revert ZeroMintQuantityError();
@@ -476,7 +366,7 @@ contract DefimonsStarterMonsters is ONFT721 {
 
         // validate whitelist
         if (sale_.whitelist) {
-            bytes32 leaf = keccak256(abi.encodePacked(user_, userAllowanceFromApartmentMints_));
+            bytes32 leaf = keccak256(abi.encodePacked(user_));
             if (!_verify(sale_.root, proof_, leaf)) {
                 revert UserNotWhitelistedOrWrongProofError(saleId_, user_, proof_);
             }
@@ -488,9 +378,8 @@ contract DefimonsStarterMonsters is ONFT721 {
         }
 
         // validate individual mint limit
-        uint256 limit = sale_.whitelist ? userAllowanceFromApartmentMints_ : sale_.limit;
-        if (limit - _minted[saleId_][user_] < quantity_) {
-            revert MaximumSaleLimitReachedError(saleId_, user_, limit);
+        if (sale_.limit - _minted[saleId_][user_] < quantity_) {
+            revert MaximumSaleLimitReachedError(saleId_, user_, sale_.limit);
         }
 
         // validate total mint limit
@@ -556,7 +445,7 @@ contract DefimonsStarterMonsters is ONFT721 {
     /// @param root_ The Merkle Tree Root to be used for verification
     /// @param proof_ The merkle proof.
     /// @param leaf_ The leaf node to find.
-    function _verify(bytes32 root_, bytes32[] calldata proof_, bytes32 leaf_) internal pure returns (bool verified) {
+    function _verify(bytes32 root_, bytes32[] memory proof_, bytes32 leaf_) internal pure returns (bool verified) {
         verified = proof_.verify(root_, leaf_);
     }
 }

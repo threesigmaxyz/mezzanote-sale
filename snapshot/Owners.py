@@ -8,8 +8,9 @@ from web3 import Web3
 This functions saves the owners to a csv file
 """
 def SaveOwnersToCSV(owners):
-    with open('Data/OwnersSnapshot.csv', 'w') as f:
-        writer = csv.DictWriter(f)
+    fieldnames = ['owner']
+    with open('Data/OwnersSnapshot.csv', 'a') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writerows(owners)
 
 
@@ -17,7 +18,7 @@ def SaveOwnersToCSV(owners):
 This function assigns all tokenIds a list of all
 the owners with different blocknumbers
 """
-def FindAndSaveOwnersWithBlockNumber(allEvents):     
+def FindAndSaveOwnersWithBlockNumber(contractAddress, allEvents):     
     data = {}
     for event in allEvents:
         if event["tokenId"] not in data:
@@ -25,11 +26,11 @@ def FindAndSaveOwnersWithBlockNumber(allEvents):
             
         data[event["tokenId"]][event["blockNumber"]] = event["to"]
 
-    with open('Data/OwnersByTokenId.json', 'w') as convert_file:
+    with open('Data/OwnersByTokenId' + str(contractAddress) + '.json', 'w') as convert_file:
         convert_file.write(json.dumps(data))
 
 
-def SaveOwnersSnapshot(desiredTimestamp, etherscanApiKey):
+def SaveOwnersSnapshot(contractAddress, desiredTimestamp, etherscanApiKey):
     """
     This function filters the owners in data\OwnersByTokenId
     by selecting the owner with the biggest blocknumber that
@@ -39,7 +40,7 @@ def SaveOwnersSnapshot(desiredTimestamp, etherscanApiKey):
     r = requests.get(f"https://api.etherscan.io/api?module=block&action=getblocknobytime&timestamp={desiredTimestamp}&closest=before&apikey={etherscanApiKey}")
     desiredBlocknumber = r.json().get("result")
     
-    with open('Data/OwnersByTokenId.json', 'r') as f:
+    with open('Data/OwnersByTokenId' + str(contractAddress) + '.json', 'r') as f:
         data = json.load(f)
 
     ownerAmount = {}
@@ -58,11 +59,7 @@ def SaveOwnersSnapshot(desiredTimestamp, etherscanApiKey):
     for owner in ownerAmount:
         ownersSnapshot.append(
                             {   
-                                "owner": owner,
-                                "amount": ownerAmount.get(owner)
-                                
+                                "owner": owner,      
                             })  
-    ownersSnapshot = sorted(ownersSnapshot, key=lambda d: d['amount'], reverse=True) 
-    
 
     SaveOwnersToCSV(ownersSnapshot)

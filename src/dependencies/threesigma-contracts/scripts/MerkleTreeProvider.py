@@ -92,10 +92,8 @@ class FFIProvider():
         sys.stdout.write(root)
 
     def encodeLeaf(self,line):
-        address_amount = line.split(",")
-        address = address_amount[0][2:]
-        amount = hex(int(address_amount[1]))[2:].zfill(64) # 32 bytes
-        return address + amount
+        address = line[2:42]
+        return address
 
 if __name__ == "__main__":
 
