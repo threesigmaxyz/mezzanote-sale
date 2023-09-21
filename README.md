@@ -1,4 +1,4 @@
-# Defimons Starter Monsters [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: MIT][license-badge]][license]
+# Mezzanote Sale[![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: MIT][license-badge]][license]
 
 [gha]: https://github.com/threesigmaxyz/mezzanote-sale/actions
 [gha-badge]: https://github.com/threesigmaxyz/mezzanote-sale/actions/workflows/ci.yml/badge.svg
