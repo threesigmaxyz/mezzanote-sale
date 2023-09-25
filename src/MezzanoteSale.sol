@@ -168,7 +168,7 @@ contract MezzanoteSale is Ownable {
     uint256 public maxMint;
 
     /// Id of the next NFT id to mint (sequential id).
-    uint256 public nextToMint = 1;
+    uint256 public nextToMint = 0;
 
     /// List of sale phases.
     Sale[] private _sales;
@@ -304,7 +304,7 @@ contract MezzanoteSale is Ownable {
 
         // bound max mint to next max mint - 1, so that maxMint is never lower than nextToMint id
         if (newMaxMint_ < oldMaxMint) {
-            newMaxMint_ = Math.max(newMaxMint_, nextToMint - 1);
+            newMaxMint_ = Math.max(newMaxMint_, nextToMint);
         }
 
         maxMint = newMaxMint_;
