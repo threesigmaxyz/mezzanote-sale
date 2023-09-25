@@ -37,7 +37,7 @@ contract MezzanoteSale is Ownable {
     /// Throws when a user wants to mint 0 tokens
     error ZeroMintQuantityError();
 
-    /// Throws when the minting call fails 
+    /// Throws when the minting call fails
     error MintFailedError(bytes data);
 
     /// Throws when the current timestamp is not within the sale interval
@@ -188,11 +188,7 @@ contract MezzanoteSale is Ownable {
     /// @param NFTToken_ Address of token to mint in sales.
     /// @param startSales_ The start of the sales.
     /// @param whitelistRoot_ For the whitelist sale, this parameter defines the merkle root to be used for verification.
-    constructor(
-        address NFTToken_,
-        uint64 startSales_,
-        bytes32 whitelistRoot_
-    ) Ownable(_msgSender()) {
+    constructor(address NFTToken_, uint64 startSales_, bytes32 whitelistRoot_) Ownable(_msgSender()) {
         setMaxMint(MAXMINT);
 
         _NFTToken = NFTToken_;
@@ -389,8 +385,9 @@ contract MezzanoteSale is Ownable {
 
         // mint NFTs
         for (uint256 i; i < quantityToMint_;) {
-            (bool success_, bytes memory data_) = _NFTToken.call(abi.encodeWithSignature("mint(address,uint256)", user_, mintedBefore + i));
-            if(!success_) revert MintFailedError(data_);
+            (bool success_, bytes memory data_) =
+                _NFTToken.call(abi.encodeWithSignature("mint(address,uint256)", user_, mintedBefore + i));
+            if (!success_) revert MintFailedError(data_);
             unchecked {
                 ++i;
             }
