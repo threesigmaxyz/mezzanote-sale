@@ -22,11 +22,11 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
 
         // go to public sale
         vm.warp(MOCK_SALE_P_START);
-        uint256 publicSaleParticipants_ = mezzanote.maxMint() - mezzanote.nextToMint();
+        uint256 publicSaleParticipants_ = mezzanote.maxMint() - mezzanote.nextToMint() - 1;
         for (uint256 i = 0; i <= publicSaleParticipants_; i++) {
             _saleMint(MOCK_SALE_ID_P, vm.addr(999_999 + i), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
-        assertEq(mezzanote.nextToMint(), mezzanote.maxMint() + 1);
+        assertEq(mezzanote.nextToMint(), mezzanote.maxMint());
     }
 
     function test_saleMint_saleDoesNotExist() public {
@@ -164,7 +164,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.deal(user_, MOCK_SALE_PRICE);
         vm.warp(MOCK_SALE_P_START);
         uint256 i = 0;
-        for (; i <= maxSaleMint_; i++) {
+        for (; i <= maxSaleMint_ - 1; i++) {
             _saleMint(MOCK_SALE_ID_P, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
 
@@ -177,7 +177,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         address user_ = vm.addr(mezzanote.maxMint() + 1);
         vm.deal(user_, MOCK_SALE_PRICE * 2);
         vm.warp(MOCK_SALE_P_START);
-        for (uint256 i = 0; i <= mezzanote.maxMint() - 1; i++) {
+        for (uint256 i = 0; i <= mezzanote.maxMint() - 2; i++) {
             _saleMint(MOCK_SALE_ID_P, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
         uint256 prevBalance_ = address(mezzanote).balance;
@@ -189,10 +189,10 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE * 2 }(MOCK_SALE_ID_P, user_, 2);
 
         // === assert ===
-        assertEq(mezzanote.nextToMint(), mezzanote.maxMint() + 1);
+        assertEq(mezzanote.nextToMint(), mezzanote.maxMint());
         assertEq(mezzanote.getMintedAmount(MOCK_SALE_ID_P, user_), 1);
         assertEq(NFTToken.balanceOf(user_), 1);
-        assertEq(NFTToken.ownerOf(mezzanote.maxMint()), user_);
+        assertEq(NFTToken.ownerOf(mezzanote.maxMint() - 1), user_);
         assertEq(user_.balance, MOCK_SALE_PRICE);
         assertEq(address(mezzanote).balance, prevBalance_ + MOCK_SALE_PRICE);
     }

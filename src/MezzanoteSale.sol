@@ -362,7 +362,7 @@ contract MezzanoteSale is Ownable {
 
         // validate total mint limit
         uint256 mintedBefore = nextToMint;
-        uint256 availableTotal_ = 1 + maxMint - mintedBefore;
+        uint256 availableTotal_ = maxMint - mintedBefore;
         if (availableTotal_ == 0) {
             revert MaximumTotalMintSupplyReachedError();
         }
