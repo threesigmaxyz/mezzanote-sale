@@ -11,7 +11,7 @@ class FFIProvider():
     def output_string(self, string):
         sys.stdout.write(string)
 
-    def output_addresses_amounts(self, filename):
+    def output_addresses(self, filename):
         addresses = [] 
         with open(filename, "r") as f:
             for line in f.readlines():

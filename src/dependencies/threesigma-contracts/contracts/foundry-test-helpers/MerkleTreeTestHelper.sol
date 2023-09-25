@@ -29,7 +29,7 @@ contract MerkleTreeTest is Test {
         // change this to locate files
         inputs[0] = "python3";
         inputs[1] = "src/dependencies/threesigma-contracts/scripts/MerkleTreeProvider.py";
-        inputs[2] = "output_addresses_amounts";
+        inputs[2] = "output_addresses";
         inputs[3] = filename;
 
         bytes memory res = vm.ffi(inputs);

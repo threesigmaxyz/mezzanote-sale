@@ -11,7 +11,7 @@ import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /// @title Mezzanote Sales contract
 /// @notice This contract mints Mezanote NFTs on sales started and parametrized by the owner.
-contract MezzanoteSale is ERC721, Ownable {
+contract MezzanoteSale is Ownable {
     //
     // Using Statements
     //
@@ -34,8 +34,11 @@ contract MezzanoteSale is ERC721, Ownable {
     /// Throws when the sale does not exist
     error SaleNotFoundError(uint256 saleId);
 
-    ///Throws when a user wants to mint 0 tokens
+    /// Throws when a user wants to mint 0 tokens
     error ZeroMintQuantityError();
+
+    /// Throws when the minting call fails 
+    error MintFailedError(bytes data);
 
     /// Throws when the current timestamp is not within the sale interval
     error NotInSalePhaseError(uint256 saleId, uint256 start, uint256 finish, uint256 current);
@@ -148,24 +151,30 @@ contract MezzanoteSale is ERC721, Ownable {
 
     // Duration of the whitelist sale
     uint64 constant DURATION_WHITELIST = 2 hours;
+
     // Duration of the public sale.
     uint64 constant DURATION_PUBLIC = 2 hours;
+
     // The sales limit of NFTs per user.
     uint8 constant LIMIT = 10;
+
     // The NFT price on the sales.
     uint64 constant PRICE = 0.069 ether;
 
+    // Default max total amount that can be minted.
+    uint256 constant MAXMINT = 555;
+
     /// Max total mint
     uint256 public maxMint;
-
-    /// Base NFT metadata URI.
-    string private _URI;
 
     /// Id of the next NFT id to mint (sequential id).
     uint256 public nextToMint = 1;
 
     /// List of sale phases.
     Sale[] private _sales;
+
+    /// Token to be minted in sales.
+    address private _NFTToken;
 
     /// Mapping of the quantity of NFTs minted to each address.
     /// Used to track and cap how many tokens an address is allowed to mint per round.
@@ -176,31 +185,17 @@ contract MezzanoteSale is ERC721, Ownable {
     /// Used to track and cap how many tokens are minted per sale.
     mapping(uint256 => uint256) private _mintedTotal;
 
-    //
-    // ERC721
-    //
-
-    /// @dev See {IERC721Metadata-tokenURI}.
-    function _baseURI() internal view override returns (string memory) {
-        return _URI;
-    }
-
-    /// @param name_ The name of the NFT
-    /// @param symbol_ The symbol of the NFT
+    /// @param NFTToken_ Address of token to mint in sales.
     /// @param startSales_ The start of the sales.
     /// @param whitelistRoot_ For the whitelist sale, this parameter defines the merkle root to be used for verification.
-    /// @param initialURI_ The initial base URI
-    /// @param maxMint_ The total maximum number of NFTs that can be minted. 555 supply.
     constructor(
-        string memory name_,
-        string memory symbol_,
+        address NFTToken_,
         uint64 startSales_,
-        bytes32 whitelistRoot_,
-        string memory initialURI_,
-        uint256 maxMint_
-    ) ERC721(name_, symbol_) Ownable(_msgSender()) {
-        setURI(initialURI_);
-        setMaxMint(maxMint_);
+        bytes32 whitelistRoot_
+    ) Ownable(_msgSender()) {
+        setMaxMint(MAXMINT);
+
+        _NFTToken = NFTToken_;
 
         uint64 startPublic_ = startSales_ + DURATION_WHITELIST;
 
@@ -208,19 +203,6 @@ contract MezzanoteSale is ERC721, Ownable {
         addSale(startSales_, startPublic_ - 1, LIMIT, PRICE, true, whitelistRoot_, false, 0);
         // Public Sale
         addSale(startPublic_, startPublic_ + DURATION_PUBLIC, LIMIT, PRICE, false, 0, false, 0);
-    }
-
-    //
-    // Owner API
-    //
-
-    /// @notice Sets the new base URI
-    /// @dev Can only be called by the contract owner.
-    /// @param newURI_ The new base URI
-    function setURI(string memory newURI_) public onlyOwner {
-        _URI = newURI_;
-
-        emit LogSetURI(newURI_);
     }
 
     /// @notice Adds a new sale period.
@@ -333,7 +315,7 @@ contract MezzanoteSale is ERC721, Ownable {
         emit LogSetMaxMint(oldMaxMint, newMaxMint_);
     }
 
-    /// @notice Mints an NFT quantity to anyone who pays for it
+    /// @notice Mints an NFT quantity to anyone who pays for it.
     /// @param saleId_ The ID of the sale to mint from
     /// @param user_ The user to mint to
     /// @param quantity_ The quantity of NFTs to mint
@@ -341,7 +323,7 @@ contract MezzanoteSale is ERC721, Ownable {
         _saleMint(saleId_, user_, quantity_, new bytes32[](0));
     }
 
-    /// @notice Users can mint a quantity bounded by the number of apartments they bought.
+    /// @notice Mints an NFT quantity to someone who has been whitelisted.
     /// @param saleId_ The ID of the sale to mint from.
     /// @param user_ The user to mint to.
     /// @param quantity_ The quantity of NFTs to mint.
@@ -407,7 +389,8 @@ contract MezzanoteSale is ERC721, Ownable {
 
         // mint NFTs
         for (uint256 i; i < quantityToMint_;) {
-            _mint(user_, mintedBefore + i);
+            (bool success_, bytes memory data_) = _NFTToken.call(abi.encodeWithSignature("mint(address,uint256)", user_, mintedBefore + i));
+            if(!success_) revert MintFailedError(data_);
             unchecked {
                 ++i;
             }

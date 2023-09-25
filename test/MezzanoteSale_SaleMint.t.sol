@@ -191,8 +191,8 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         // === assert ===
         assertEq(mezzanote.nextToMint(), mezzanote.maxMint() + 1);
         assertEq(mezzanote.getMintedAmount(MOCK_SALE_ID_P, user_), 1);
-        assertEq(mezzanote.balanceOf(user_), 1);
-        assertEq(mezzanote.ownerOf(mezzanote.maxMint()), user_);
+        assertEq(NFTToken.balanceOf(user_), 1);
+        assertEq(NFTToken.ownerOf(mezzanote.maxMint()), user_);
         assertEq(user_.balance, MOCK_SALE_PRICE);
         assertEq(address(mezzanote).balance, prevBalance_ + MOCK_SALE_PRICE);
     }

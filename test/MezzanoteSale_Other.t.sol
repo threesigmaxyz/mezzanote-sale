@@ -11,8 +11,6 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
 
     function test_constructor() public {
         // === assert ===
-        assertEq(mezzanote.name(), "MezzanoteSale");
-        assertEq(mezzanote.symbol(), "MS");
         assertEq(mezzanote.owner(), getOwner());
         assertEq(mezzanote.nextToMint(), 1);
         assertEq(mezzanote.maxMint(), MAX_MINT);
@@ -37,32 +35,6 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
         assertEq(sale2.whitelist, false);
         assertEq(sale2.root, 0);
         assertEq(sale2.maxMint, 0);
-    }
-
-    function test_setURI() public {
-        // === arrange ===
-        string memory newURI_ = "https://twitter.com/Mezzanote/";
-        address owner_ = getOwner();
-        // and
-        //_addMockSaleAndValidate(false, false);
-        vm.warp(MOCK_SALE_P_START);
-        _saleMint(1, vm.addr(1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
-
-        // === act ===
-        vm.expectEmit(false, false, false, true);
-        emit LogSetURI(newURI_);
-        vm.prank(owner_);
-        mezzanote.setURI(newURI_);
-
-        // === assert ===
-        assertEq(mezzanote.tokenURI(1), "https://twitter.com/Mezzanote/1");
-    }
-
-    function test_setURI_onlyOwner() public {
-        // === act ===
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, vm.addr(1)));
-        vm.prank(vm.addr(1));
-        mezzanote.setURI("https://twitter.com/Mezzanote/");
     }
 
     function test_withdrawEther() public {

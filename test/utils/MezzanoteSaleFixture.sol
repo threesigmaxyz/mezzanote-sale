@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "src/dependencies/threesigma-contracts/contracts/foundry-test-helpers/MerkleTreeTestHelper.sol";
-
+import "./MockERC721Token.sol";
 import "src/MezzanoteSale.sol";
 
 contract MezzanoteSaleFixture is MerkleTreeTest {
@@ -28,19 +28,20 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
 
     bytes32 public whitelistMerkleRoot;
 
+    MockERC721Token NFTToken;
+
     function setUp() public virtual {
         /// generate and update merkle root (whitelist)
         updateMerkleTree("snapshot/Data/OwnersSnapshot.csv");
 
+        NFTToken = new MockERC721Token("MezzanoteSale", "MS");
+
         // deploy MezzanoteSale.sol
         vm.prank(getOwner());
         mezzanote = new MezzanoteSale(
-            "MezzanoteSale",                                // Name
-            "MS",                                           // Symbol
+            address(NFTToken),                              // address of NFT
             uint64(block.timestamp),                        // Start date
-            whitelistMerkleRoot,                            // Root for whitelist sale
-            "https://mezzanote.com",                        // Metadata uri
-            MAX_MINT                                        // Max tokens to mint
+            whitelistMerkleRoot                             // Root for whitelist sale
         );
     }
 
@@ -71,9 +72,9 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
         // perform assertions
         assertEq(mezzanote.nextToMint(), prevMinted + quantity_);
         assertEq(mezzanote.getMintedAmount(saleId_, user_), quantity_ + prevUserMinted_);
-        assertEq(mezzanote.balanceOf(user_), quantity_ + prevUserMinted_);
+        assertEq(NFTToken.balanceOf(user_), quantity_ + prevUserMinted_);
         for (uint256 i = 0; i < quantity_; i++) {
-            assertEq(mezzanote.ownerOf(prevMinted + i), user_);
+            assertEq(NFTToken.ownerOf(prevMinted + i), user_);
         }
         assertEq(user_.balance, 0);
         assertEq(address(mezzanote).balance, prevBalance + quantity_ * price_);
