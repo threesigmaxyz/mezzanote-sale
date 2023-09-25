@@ -18,7 +18,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
             _saleMint(MOCK_SALE_ID_W, addresses[i], MOCK_SALE_LIMIT, MOCK_SALE_LIMIT, MOCK_SALE_PRICE, merkleProofs[i]);
             whitelistMinted_ += MOCK_SALE_LIMIT;
         }
-        assertEq(mezzanote.nextToMint(), whitelistMinted_);
+        assertEq(mezzanote.nextToMint(), whitelistMinted_ + STARTING_ID);
 
         // go to public sale
         vm.warp(MOCK_SALE_P_START);
@@ -163,7 +163,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         address user_ = vm.addr(maxSaleMint_ + 1);
         vm.deal(user_, MOCK_SALE_PRICE);
         vm.warp(MOCK_SALE_P_START);
-        uint256 i = 0;
+        uint256 i = STARTING_ID;
         for (; i <= maxSaleMint_ - 1; i++) {
             _saleMint(MOCK_SALE_ID_P, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
@@ -177,7 +177,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         address user_ = vm.addr(mezzanote.maxMint() + 1);
         vm.deal(user_, MOCK_SALE_PRICE * 2);
         vm.warp(MOCK_SALE_P_START);
-        for (uint256 i = 0; i <= mezzanote.maxMint() - 2; i++) {
+        for (uint256 i = STARTING_ID; i <= mezzanote.maxMint() - 2; i++) {
             _saleMint(MOCK_SALE_ID_P, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
         uint256 prevBalance_ = address(mezzanote).balance;

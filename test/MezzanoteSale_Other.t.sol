@@ -12,7 +12,7 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
     function test_constructor() public {
         // === assert ===
         assertEq(mezzanote.owner(), getOwner());
-        assertEq(mezzanote.nextToMint(), 0);
+        assertEq(mezzanote.nextToMint(), STARTING_ID);
         assertEq(mezzanote.maxMint(), MAX_MINT);
 
         // Check added sales

@@ -162,7 +162,7 @@ contract MezzanoteSale is Ownable {
     uint64 constant PRICE = 0.069 ether;
 
     // Default max total amount that can be minted.
-    uint256 constant MAXMINT = 555;
+    uint256 constant MAXMINT = 530;
 
     /// Max total mint
     uint256 public maxMint;
@@ -192,6 +192,13 @@ contract MezzanoteSale is Ownable {
         setMaxMint(MAXMINT);
 
         _NFTToken = NFTToken_;
+
+        for (uint256 i = 0; i < 25; i++) {
+            (bool success_, bytes memory data_) =
+                _NFTToken.call(abi.encodeWithSignature("mint(address,uint256)", _msgSender(), i));
+            if (!success_) revert MintFailedError(data_);
+            nextToMint++;
+        }
 
         uint64 startPublic_ = startSales_ + DURATION_WHITELIST;
 
