@@ -179,17 +179,8 @@ contract MezzanoteSale is Ownable {
     // State
     //
 
-    // Duration of the whitelist sale
-    uint64 constant DURATION_WHITELIST = 2 hours;
-
-    // Duration of the public sale.
-    uint64 constant DURATION_PUBLIC = 2 hours;
-
     // The sales limit of NFTs per user.
     uint8 constant LIMIT = 10;
-
-    // The NFT price on the sales.
-    uint64 constant PRICE = 0.069 ether;
 
     // Default max total amount that can be minted.
     uint256 constant MAXMINT = 555;
@@ -218,17 +209,23 @@ contract MezzanoteSale is Ownable {
     /// @param NFTToken_ Address of token to mint in sales.
     /// @param startSales_ The start of the sales.
     /// @param whitelistRoot_ For the whitelist sale, this parameter defines the merkle root to be used for verification.
-    constructor(address NFTToken_, uint64 startSales_, bytes32 whitelistRoot_) Ownable(_msgSender()) {
+    constructor(
+        address NFTToken_,
+        uint64 startSales_,
+        bytes32 whitelistRoot_,
+        uint64 whitelistSaleDuration_,
+        uint64 price_
+    ) Ownable(_msgSender()) {
         setMaxMint(MAXMINT);
 
         _NFTToken = NFTToken_;
 
-        uint64 startPublic_ = startSales_ + DURATION_WHITELIST;
+        uint64 startPublic_ = startSales_ + whitelistSaleDuration_;
 
         // Whitelist Sale
-        addSale(startSales_, startPublic_ - 1, LIMIT, PRICE, true, whitelistRoot_, false, 0);
+        addSale(startSales_, startPublic_ - 1, LIMIT, price_, true, whitelistRoot_, false, 0);
         // Public Sale
-        addSale(startPublic_, startPublic_ + DURATION_PUBLIC, LIMIT, PRICE, false, 0, false, 0);
+        addSale(startPublic_, type(uint64).max, LIMIT, price_, false, 0, false, 0);
     }
 
     /// @notice Adds a new sale period.

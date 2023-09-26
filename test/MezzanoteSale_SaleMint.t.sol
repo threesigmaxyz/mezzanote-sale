@@ -49,34 +49,36 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
     }
 
     function test_saleMint_notInSalePhaseError() public {
+        _addMockSaleAndValidate(false, false);
+
         // === arrange ===
         address user_ = vm.addr(9090);
 
         // === act ===
-        vm.warp(MOCK_SALE_P_START - 1);
+        vm.warp(MOCK_SALE_START - 1);
         vm.expectRevert(
             abi.encodeWithSelector(
                 MezzanoteSale.NotInSalePhaseError.selector,
-                1,
-                MOCK_SALE_P_START,
-                MOCK_SALE_P_FINISH,
-                MOCK_SALE_P_START - 1
+                MOCK_SALE_ID,
+                MOCK_SALE_START,
+                MOCK_SALE_FINISH,
+                MOCK_SALE_START - 1
             )
         );
-        mezzanote.publicSaleMint(1, user_, 1);
+        mezzanote.publicSaleMint(MOCK_SALE_ID, user_, 1);
 
         // === act ===
-        vm.warp(MOCK_SALE_P_FINISH + 1);
+        vm.warp(MOCK_SALE_FINISH + 1);
         vm.expectRevert(
             abi.encodeWithSelector(
                 MezzanoteSale.NotInSalePhaseError.selector,
-                1,
-                MOCK_SALE_P_START,
-                MOCK_SALE_P_FINISH,
-                MOCK_SALE_P_FINISH + 1
+                MOCK_SALE_ID,
+                MOCK_SALE_START,
+                MOCK_SALE_FINISH,
+                MOCK_SALE_FINISH + 1
             )
         );
-        mezzanote.publicSaleMint(1, user_, 1);
+        mezzanote.publicSaleMint(MOCK_SALE_ID, user_, 1);
     }
 
     function test_saleMint_user_NotWhitelistedOrWrongProof() public {

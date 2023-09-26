@@ -8,7 +8,9 @@ import "src/MezzanoteSale.sol";
 contract DeploymentScript is Script {
     /// @notice Change these constants to your desired values
     address private constant DESIRED_TOKEN_ADDRESS = address(1);
-    uint64 private constant SALE_START = 99;
+    uint64 private constant SALE_START = 1_695_744_000; // Tuesday, September 26th 2023, 12:00:00 pm
+    uint64 private constant SALE_DURATION = 3 hours;
+    uint64 private constant SALE_PRICE = 0.069 ether;
 
     bytes32 private whitelistRoot_;
 
@@ -32,7 +34,9 @@ contract DeploymentScript is Script {
         new MezzanoteSale(
             DESIRED_TOKEN_ADDRESS,                                        
             SALE_START, 
-            whitelistRoot_                    
+            whitelistRoot_,
+            SALE_DURATION,
+            SALE_PRICE
         );
 
         // stop recording calls
