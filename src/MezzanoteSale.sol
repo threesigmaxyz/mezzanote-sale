@@ -168,7 +168,7 @@ contract MezzanoteSale is Ownable {
     uint256 public maxMint;
 
     /// Id of the next NFT id to mint (sequential id).
-    uint256 public nextToMint = 0;
+    uint256 public nextToMint = 25;
 
     /// List of sale phases.
     Sale[] private _sales;
@@ -192,13 +192,6 @@ contract MezzanoteSale is Ownable {
         setMaxMint(MAXMINT);
 
         _NFTToken = NFTToken_;
-
-        for (uint256 i = 0; i < 25; i++) {
-            (bool success_, bytes memory data_) =
-                _NFTToken.call(abi.encodeWithSignature("mint(address,uint256)", _msgSender(), i));
-            if (!success_) revert MintFailedError(data_);
-            nextToMint++;
-        }
 
         uint64 startPublic_ = startSales_ + DURATION_WHITELIST;
 
