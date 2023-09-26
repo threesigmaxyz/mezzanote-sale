@@ -73,3 +73,6 @@ run-script :;
 
 run-script-local :;
 	@./utils/run_script_local.sh
+
+get-merkle-root :;
+	@forge test --mt test_getMerkleRoot -vv --ffi
