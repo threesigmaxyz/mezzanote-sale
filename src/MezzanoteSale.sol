@@ -64,6 +64,12 @@ contract MezzanoteSale is Ownable {
     /// Throws when an address to mint for is 0
     error ZeroAddressError();
 
+    /// Throws when refund fails
+    error EtherRefundFailedError();
+
+    // Throws when withdraw eth fails
+    error EtherWithdrawFailedError();
+
     //
     // Events
     //
@@ -87,6 +93,30 @@ contract MezzanoteSale is Ownable {
      * @param maxMint The sale's max mint (does not matter if hasMaxMint is false)
      */
     event LogSaleCreated(
+        uint256 indexed saleId,
+        uint64 start,
+        uint64 finish,
+        uint8 limit,
+        uint64 price,
+        bool whitelist,
+        bytes32 root,
+        bool hasMaxMint,
+        uint40 maxMint
+    );
+
+    /*
+     * @notice Emitted when a sale is edited
+     * @param saleId The sale's ID
+     * @param start The sale's start time
+     * @param finish The sale's finish time
+     * @param limit The sale's limit per user (applicable only for public sales)
+     * @param price The sale's price
+     * @param whitelist Whether the sale is of type whitelist or not
+     * @param root The sale's merkle root (does not matter for public sales)
+     * @param hasMaxMint Whether the sale has a max mint or not
+     * @param maxMint The sale's max mint (does not matter if hasMaxMint is false)
+     */
+    event LogSaleEdited(
         uint256 indexed saleId,
         uint64 start,
         uint64 finish,
@@ -241,12 +271,58 @@ contract MezzanoteSale is Ownable {
         );
     }
 
+    /// @notice Edits a Sale Phase. Can't change the hasMaxMint property, only the maxMint property.
+    /// @dev Can only be called by the contract owner.
+    /// @param saleId_ The unique ID of the sale to be edited
+    /// @param start_ The new start time we want the sale to have
+    /// @param finish_ The new end time we want the sale to have
+    /// @param _limit The new limit of NFTs we want the sale to have
+    /// @param _price The new price we want the NFTs to have
+    /// @param whitelist_ Whether it is a whitelist sale
+    /// @param root_ Defines the root to be used for whitelist verification
+    /// @param maxMint_ The new max mint we want the sale to have
+    /// If we want any Sale parameter to stay unchanged, send the same value as a parameter to the function
+    function editSale(
+        uint256 saleId_,
+        uint64 start_,
+        uint64 finish_,
+        uint8 _limit,
+        uint64 _price,
+        bool whitelist_,
+        bytes32 root_,
+        uint40 maxMint_
+    ) external onlyOwner {
+        if (saleId_ >= _sales.length) revert SaleNotFoundError(saleId_);
+
+        Sale memory sale_ = _sales[saleId_];
+
+        _validateSaleParams(start_, finish_, whitelist_, root_, sale_.hasMaxMint, maxMint_);
+        if (sale_.hasMaxMint && maxMint_ < sale_.maxMint) {
+            maxMint_ = uint40(Math.max(maxMint_, _mintedTotal[saleId_]));
+        }
+
+        sale_.start = start_;
+        sale_.finish = finish_;
+        sale_.limit = _limit;
+        sale_.price = _price;
+        sale_.whitelist = whitelist_;
+        sale_.root = root_;
+        sale_.maxMint = maxMint_;
+
+        _sales[saleId_] = sale_;
+
+        emit LogSaleEdited(saleId_, start_, finish_, _limit, _price, whitelist_, root_, sale_.hasMaxMint, maxMint_);
+    }
+
     /// @notice Withdraws any ETH sent to this contract.
     /// @dev Only callable by this contract's owner.
     /// @param to_ The address to withdraw to.
     /// @param amount_ The amount of ETH (in Wei) to withdraw.
     function withdrawEther(address to_, uint256 amount_) external onlyOwner {
-        payable(to_).transfer(amount_);
+        (bool success,) = payable(to_).call{ value: amount_ }("");
+        if (!success) {
+            revert EtherWithdrawFailedError();
+        }
     }
 
     /// Withdraws any ERC20 tokens sent to the contract.
@@ -399,7 +475,10 @@ contract MezzanoteSale is Ownable {
         // refund leftover eth to buyer
         if (quantityToMint_ < quantity_) {
             // can fail when minting through a contract
-            payable(msg.sender).transfer(sale_.price * (quantity_ - quantityToMint_));
+            (bool success,) = payable(msg.sender).call{ value: sale_.price * (quantity_ - quantityToMint_) }("");
+            if (!success) {
+                revert EtherRefundFailedError();
+            }
             emit LogRefund(saleId_, msg.sender, quantity_ - quantityToMint_);
         }
     }

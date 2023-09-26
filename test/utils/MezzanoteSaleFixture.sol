@@ -24,6 +24,17 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
     event LogSetURI(string newURI);
     event LogSale(uint256 indexed saleId, address indexed to, uint256 quantity);
     event LogSetMaxMint(uint256 oldMaxMint, uint256 _newMaxMint);
+    event LogSaleEdited(
+        uint256 indexed saleId,
+        uint64 start,
+        uint64 finish,
+        uint8 limit,
+        uint64 price,
+        bool whitelist,
+        bytes32 root,
+        bool hasMaxMint,
+        uint40 maxMint
+    );
 
     MezzanoteSale mezzanote;
 
@@ -79,6 +90,54 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
         }
         assertEq(user_.balance, 0);
         assertEq(address(mezzanote).balance, prevBalance + quantity_ * price_);
+    }
+
+    function _editMockSale(bool whitelist_) internal {
+        mezzanote.editSale(
+            MOCK_SALE_ID_W,
+            MOCK_SALE_W_START,
+            MOCK_SALE_W_FINISH,
+            MOCK_SALE_LIMIT,
+            MOCK_SALE_PRICE,
+            whitelist_,
+            whitelistMerkleRoot,
+            MOCK_SALE_MAX_MINT
+        );
+    }
+
+    function _editMockSaleAndValidate(bool whitelist_) internal {
+        bool hasMaxMint = mezzanote.getSale(MOCK_SALE_ID_W).hasMaxMint;
+        _validateLogMockSaleEdited(whitelist_, hasMaxMint);
+        vm.prank(getOwner());
+        _editMockSale(whitelist_);
+        _validateMockSale(whitelist_, hasMaxMint);
+    }
+
+    function _validateLogMockSaleEdited(bool whitelist_, bool hasMaxMint_) internal {
+        vm.expectEmit(true, false, false, true);
+        emit LogSaleEdited(
+            MOCK_SALE_ID_W,
+            MOCK_SALE_W_START,
+            MOCK_SALE_W_FINISH,
+            MOCK_SALE_LIMIT,
+            MOCK_SALE_PRICE,
+            whitelist_,
+            whitelistMerkleRoot,
+            hasMaxMint_,
+            MOCK_SALE_MAX_MINT
+        );
+    }
+
+    function _validateMockSale(bool whitelist_, bool hasMaxMint_) internal {
+        MezzanoteSale.Sale memory sale = mezzanote.getSale(MOCK_SALE_ID_W);
+        assertEq(sale.start, MOCK_SALE_W_START);
+        assertEq(sale.finish, MOCK_SALE_W_FINISH);
+        assertEq(sale.limit, MOCK_SALE_LIMIT);
+        assertEq(sale.price, MOCK_SALE_PRICE);
+        assertEq(sale.whitelist, whitelist_);
+        assertEq(sale.root, whitelistMerkleRoot);
+        assertEq(sale.hasMaxMint, hasMaxMint_);
+        assertEq(sale.maxMint, MOCK_SALE_MAX_MINT);
     }
 
     // === Other ===
