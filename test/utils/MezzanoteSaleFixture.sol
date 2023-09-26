@@ -18,7 +18,7 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
     uint64 MOCK_SALE_FINISH = 1 + 4 hours + 1 + 2 hours;
     uint8 MOCK_SALE_LIMIT = 10;
     uint64 MOCK_SALE_PRICE = 0.069 ether;
-    uint40 MOCK_SALE_MAX_MINT = 555;
+    uint40 MOCK_SALE_MAX_MINT = 50;
     uint256 STARTING_ID = 25;
 
     uint256 MAX_MINT = 555;
@@ -74,6 +74,34 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
     }
 
     // === Sale Helpers ===
+
+    function _addSale(
+        uint256 saleId_,
+        uint64 start_,
+        uint64 finish_,
+        uint8 limit_,
+        uint64 price_,
+        bool whitelist_,
+        bytes32 root_,
+        bool hasMaxMint_,
+        uint40 maxMint_
+    ) internal {
+        // add sale
+        vm.expectEmit(true, false, false, true);
+        emit LogSaleCreated(saleId_, start_, finish_, limit_, price_, whitelist_, root_, hasMaxMint_, maxMint_);
+        vm.prank(getOwner());
+        mezzanote.addSale(start_, finish_, limit_, price_, whitelist_, root_, hasMaxMint_, maxMint_);
+
+        // perform assertions
+        MezzanoteSale.Sale memory sale = mezzanote.getSale(saleId_);
+        assertEq(sale.start, start_);
+        assertEq(sale.finish, finish_);
+        assertEq(sale.price, price_);
+        assertEq(sale.limit, limit_);
+        assertEq(sale.whitelist, whitelist_);
+        assertEq(sale.root, root_);
+        assertEq(sale.maxMint, maxMint_);
+    }
 
     function _saleMint(
         uint256 saleId_,

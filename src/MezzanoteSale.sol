@@ -375,7 +375,7 @@ contract MezzanoteSale is Ownable {
         uint256 oldMaxMint = maxMint;
         if (newMaxMint_ == oldMaxMint) revert StaleMaxMintUpdateError();
 
-        // bound max mint to next max mint - 1, so that maxMint is never lower than nextToMint id
+        // bound max mint to next max mint, so that maxMint is never lower than nextToMint id
         if (newMaxMint_ < oldMaxMint) {
             newMaxMint_ = Math.max(newMaxMint_, nextToMint);
         }

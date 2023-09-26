@@ -161,7 +161,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
 
     function test_saleMint_maximumTotalMintSupplyReachedError() public {
         // === arrange ===
-        uint256 maxSaleMint_ = MOCK_SALE_MAX_MINT;
+        uint256 maxSaleMint_ = MAX_MINT;
         address user_ = vm.addr(maxSaleMint_ + 1);
         vm.deal(user_, MOCK_SALE_PRICE);
         vm.warp(MOCK_SALE_P_START);
@@ -172,6 +172,25 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
 
         vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.MaximumTotalMintSupplyReachedError.selector));
         mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE }(MOCK_SALE_ID_P, user_, 1);
+    }
+
+    function test_saleMint_maximumSaleMintSupplyReachedError() public {
+        // add mock public sale
+        _addMockSaleAndValidate(false, true);
+
+        // === arrange ===
+        uint256 maxSaleMint_ = mezzanote.getSale(MOCK_SALE_ID).maxMint;
+        address user_ = vm.addr(maxSaleMint_ + 1);
+        vm.deal(user_, MOCK_SALE_PRICE);
+        vm.warp(MOCK_SALE_START);
+        for (uint256 i = 1; i <= maxSaleMint_; i++) {
+            _saleMint(MOCK_SALE_ID, vm.addr(i), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
+        }
+
+        // === act ===
+        vm.prank(user_);
+        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.MaximumSaleMintSupplyReachedError.selector, MOCK_SALE_ID));
+        mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE }(MOCK_SALE_ID, user_, 1);
     }
 
     function test_saleMint_withRefund() public {

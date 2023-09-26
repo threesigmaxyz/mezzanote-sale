@@ -158,6 +158,54 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
         mezzanote.setMaxMint(newMaxMint_);
     }
 
+    function test_setMaxMint_ok_reduceMaxMint_smallerThan_nextMintId() public {
+        // === arrange ===
+        _addMockSaleAndValidate(false, false);
+
+        uint256 newMaxMint = 30;
+        uint256 nrSales = 3;
+
+        vm.warp(MOCK_SALE_START);
+
+        for (uint256 i = 0; i < nrSales; i++) {
+            _saleMint(MOCK_SALE_ID, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
+        }
+
+        // === act ===
+        vm.expectEmit(true, true, false, true, address(mezzanote));
+        emit LogSetMaxMint(MAX_MINT, newMaxMint);
+
+        vm.prank(getOwner());
+        mezzanote.setMaxMint(newMaxMint);
+    }
+
+    function test_fuzz_setMaxMint(uint256 newMaxMint_, uint256 numberOfSales_) public {
+        if (numberOfSales_ > 30) numberOfSales_ = 30;
+        if (newMaxMint_ < 30) newMaxMint_ = 30;
+
+        // === arrange ===
+        _addMockSaleAndValidate(false, false);
+
+        vm.warp(MOCK_SALE_START);
+
+        for (uint256 i = 0; i < numberOfSales_; i++) {
+            _saleMint(MOCK_SALE_ID, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
+        }
+
+        // === act ===
+        if (newMaxMint_ != MAX_MINT) {
+            vm.expectEmit(true, true, false, true, address(mezzanote));
+            uint256 loggedNewMaxMint = newMaxMint_;
+            if (newMaxMint_ < numberOfSales_ + STARTING_ID) loggedNewMaxMint = numberOfSales_ + STARTING_ID;
+            emit LogSetMaxMint(MAX_MINT, loggedNewMaxMint);
+        } else {
+            vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.StaleMaxMintUpdateError.selector));
+        }
+
+        vm.prank(getOwner());
+        mezzanote.setMaxMint(newMaxMint_);
+    }
+
     function test_setMaxMint_onlyOwner() public {
         // === act ===
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, vm.addr(1)));
