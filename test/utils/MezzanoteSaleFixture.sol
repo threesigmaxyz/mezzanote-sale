@@ -15,10 +15,10 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
     uint64 MOCK_SALE_P_FINISH = 1 + 4 hours; // Public sale
     uint8 MOCK_SALE_LIMIT = 10;
     uint64 MOCK_SALE_PRICE = 0.069 ether;
-    uint40 MOCK_SALE_MAX_MINT = 530;
+    uint40 MOCK_SALE_MAX_MINT = 555;
     uint256 STARTING_ID = 25;
 
-    uint256 MAX_MINT = 530;
+    uint256 MAX_MINT = 555;
 
     // Events
     event LogSetURI(string newURI);

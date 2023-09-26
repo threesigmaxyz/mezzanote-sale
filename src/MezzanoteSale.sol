@@ -192,7 +192,7 @@ contract MezzanoteSale is Ownable {
     uint64 constant PRICE = 0.069 ether;
 
     // Default max total amount that can be minted.
-    uint256 constant MAXMINT = 530;
+    uint256 constant MAXMINT = 555;
 
     /// Max total mint
     uint256 public maxMint;
