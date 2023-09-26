@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./utils/MezzanoteSaleFixture.sol";
+import "./utils/MezzanotteSaleFixture.sol";
 
-contract MezzanoteSale_AddSale is MezzanoteSaleFixture {
+contract MezzanotteSale_AddSale is MezzanotteSaleFixture {
     function setUp() public override {
         super.setUp();
     }
@@ -19,7 +19,7 @@ contract MezzanoteSale_AddSale is MezzanoteSaleFixture {
         // === act ===
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.InvalidSaleIntervalError.selector, MOCK_SALE_START, MOCK_SALE_START - 1
+                MezzanotteSale.InvalidSaleIntervalError.selector, MOCK_SALE_START, MOCK_SALE_START - 1
             )
         );
         vm.prank(owner);
@@ -32,7 +32,7 @@ contract MezzanoteSale_AddSale is MezzanoteSaleFixture {
         address owner_ = getOwner();
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.InvalidWhitelistRootError.selector);
+        vm.expectRevert(MezzanotteSale.InvalidWhitelistRootError.selector);
         vm.prank(owner_);
         whitelistMerkleRoot = bytes32(0);
         _addMockSale(true, false);
@@ -50,7 +50,7 @@ contract MezzanoteSale_AddSale is MezzanoteSaleFixture {
         address owner_ = getOwner();
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.InvalidSaleMaxMintError.selector);
+        vm.expectRevert(MezzanotteSale.InvalidSaleMaxMintError.selector);
         vm.prank(owner_);
         MOCK_SALE_MAX_MINT = 0;
         _addMockSale(true, true);

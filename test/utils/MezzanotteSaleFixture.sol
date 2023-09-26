@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 
 import "src/dependencies/threesigma-contracts/contracts/foundry-test-helpers/MerkleTreeTestHelper.sol";
 import "./MockERC721Token.sol";
-import "src/MezzanoteSale.sol";
+import "src/MezzanotteSale.sol";
 
-contract MezzanoteSaleFixture is MerkleTreeTest {
+contract MezzanotteSaleFixture is MerkleTreeTest {
     // Constants
     uint256 MOCK_SALE_ID_W = 0; // Whitelist sale
     uint256 MOCK_SALE_ID_P = 1; // Public sale
@@ -50,7 +50,7 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
         uint40 maxMint
     );
 
-    MezzanoteSale mezzanote;
+    MezzanotteSale mezzanote;
 
     bytes32 public whitelistMerkleRoot;
 
@@ -60,11 +60,11 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
         /// generate and update merkle root (whitelist)
         updateMerkleTree("snapshot/Data/OwnersSnapshot.csv");
 
-        NFTToken = new MockERC721Token("MezzanoteSale", "MS");
+        NFTToken = new MockERC721Token("MezzanotteSale", "MS");
 
-        // deploy MezzanoteSale.sol
+        // deploy MezzanotteSale.sol
         vm.prank(getOwner());
-        mezzanote = new MezzanoteSale(
+        mezzanote = new MezzanotteSale(
             address(NFTToken),                              // address of NFT
             uint64(block.timestamp),                        // Start date
             whitelistMerkleRoot,                            // Root for whitelist sale
@@ -93,7 +93,7 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
         mezzanote.addSale(start_, finish_, limit_, price_, whitelist_, root_, hasMaxMint_, maxMint_);
 
         // perform assertions
-        MezzanoteSale.Sale memory sale = mezzanote.getSale(saleId_);
+        MezzanotteSale.Sale memory sale = mezzanote.getSale(saleId_);
         assertEq(sale.start, start_);
         assertEq(sale.finish, finish_);
         assertEq(sale.price, price_);
@@ -208,7 +208,7 @@ contract MezzanoteSaleFixture is MerkleTreeTest {
     }
 
     function _validateMockSale(bool whitelist_, bool hasMaxMint_) internal {
-        MezzanoteSale.Sale memory sale = mezzanote.getSale(MOCK_SALE_ID);
+        MezzanotteSale.Sale memory sale = mezzanote.getSale(MOCK_SALE_ID);
         assertEq(sale.start, MOCK_SALE_START);
         assertEq(sale.finish, MOCK_SALE_FINISH);
         assertEq(sale.limit, MOCK_SALE_LIMIT);

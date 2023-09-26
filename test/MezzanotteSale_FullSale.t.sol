@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
-import "./utils/MezzanoteSaleFixture.sol";
+import "./utils/MezzanotteSaleFixture.sol";
 
-contract MezzanoteSale_FullSale is MezzanoteSaleFixture {
+contract MezzanotteSale_FullSale is MezzanotteSaleFixture {
     uint256 private constant WHITELIST_SALE_ID = 2;
     uint64 private constant WHITELIST_SALE_START = 421;
     uint64 private constant WHITELIST_SALE_FINISH = 8888;
@@ -70,7 +70,7 @@ contract MezzanoteSale_FullSale is MezzanoteSaleFixture {
         assertEq(mezzanote.nextToMint(), mezzanote.maxMint());
 
         // try to mint one more (reverts)
-        vm.expectRevert(MezzanoteSale.MaximumTotalMintSupplyReachedError.selector);
+        vm.expectRevert(MezzanotteSale.MaximumTotalMintSupplyReachedError.selector);
         mezzanote.publicSaleMint{ value: PUBLIC_SALE_PRICE }(PUBLIC_SALE_ID, vm.addr(1234), 1);
 
         // withdraw sale proceedings

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./utils/MezzanoteSaleFixture.sol";
+import "./utils/MezzanotteSaleFixture.sol";
 
-contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
+contract MezzanotteSale_EditSale is MezzanotteSaleFixture {
     function setUp() public override {
         super.setUp();
         _addMockSaleAndValidate(true, true);
@@ -25,7 +25,7 @@ contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
         address owner_ = getOwner();
 
         // === act ===
-        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.SaleNotFoundError.selector, MOCK_SALE_ID + 2));
+        vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.SaleNotFoundError.selector, MOCK_SALE_ID + 2));
         vm.prank(owner_);
         MOCK_SALE_ID = MOCK_SALE_ID + 2;
         _editMockSale(false);
@@ -38,7 +38,7 @@ contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
 
         // === act ===
         vm.expectRevert(
-            abi.encodeWithSelector(MezzanoteSale.InvalidSaleIntervalError.selector, MOCK_SALE_START, MOCK_SALE_FINISH)
+            abi.encodeWithSelector(MezzanotteSale.InvalidSaleIntervalError.selector, MOCK_SALE_START, MOCK_SALE_FINISH)
         );
         vm.prank(owner_);
         _editMockSale(false);
@@ -49,7 +49,7 @@ contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
         address owner_ = getOwner();
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.InvalidWhitelistRootError.selector);
+        vm.expectRevert(MezzanotteSale.InvalidWhitelistRootError.selector);
         vm.prank(owner_);
         whitelistMerkleRoot = bytes32(0);
         _editMockSale(true);
@@ -67,7 +67,7 @@ contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
         address owner_ = getOwner();
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.InvalidSaleMaxMintError.selector);
+        vm.expectRevert(MezzanotteSale.InvalidSaleMaxMintError.selector);
         vm.prank(owner_);
         MOCK_SALE_MAX_MINT = 0;
         _editMockSale(true);
@@ -102,7 +102,7 @@ contract MezzanoteSale_EditSale is MezzanoteSaleFixture {
                 loggedNewSaleMaxMint_
             );
         } else {
-            vm.expectRevert(MezzanoteSale.InvalidSaleMaxMintError.selector);
+            vm.expectRevert(MezzanotteSale.InvalidSaleMaxMintError.selector);
         }
 
         MOCK_SALE_MAX_MINT = newSaleMaxMint_;

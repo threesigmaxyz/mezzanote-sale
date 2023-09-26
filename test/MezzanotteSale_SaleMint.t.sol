@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./utils/MezzanoteSaleFixture.sol";
-import "src/MezzanoteSale.sol";
+import "./utils/MezzanotteSaleFixture.sol";
+import "src/MezzanotteSale.sol";
 
-contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
+contract MezzanotteSale_SaleMint is MezzanotteSaleFixture {
     function setUp() public override {
         super.setUp();
     }
@@ -34,7 +34,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         address user_ = vm.addr(9090);
 
         // === act ===
-        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.SaleNotFoundError.selector, MOCK_SALE_ID_P + 3));
+        vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.SaleNotFoundError.selector, MOCK_SALE_ID_P + 3));
         mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE }(MOCK_SALE_ID_P + 3, user_, 1);
     }
 
@@ -44,7 +44,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.warp(MOCK_SALE_P_START);
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.ZeroMintQuantityError.selector);
+        vm.expectRevert(MezzanotteSale.ZeroMintQuantityError.selector);
         mezzanote.publicSaleMint(1, user_, 0);
     }
 
@@ -58,7 +58,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.warp(MOCK_SALE_START - 1);
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.NotInSalePhaseError.selector,
+                MezzanotteSale.NotInSalePhaseError.selector,
                 MOCK_SALE_ID,
                 MOCK_SALE_START,
                 MOCK_SALE_FINISH,
@@ -71,7 +71,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.warp(MOCK_SALE_FINISH + 1);
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.NotInSalePhaseError.selector,
+                MezzanotteSale.NotInSalePhaseError.selector,
                 MOCK_SALE_ID,
                 MOCK_SALE_START,
                 MOCK_SALE_FINISH,
@@ -87,7 +87,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         // === act ===
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.UserNotWhitelistedOrWrongProofError.selector, 0, addresses[0], merkleProofs[1]
+                MezzanotteSale.UserNotWhitelistedOrWrongProofError.selector, 0, addresses[0], merkleProofs[1]
             )
         );
         mezzanote.whitelistSaleMint{ value: MOCK_SALE_PRICE }(0, addresses[0], MOCK_SALE_LIMIT, merkleProofs[1]);
@@ -106,7 +106,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         // === act ===
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.WrongValueSentForMintError.selector,
+                MezzanotteSale.WrongValueSentForMintError.selector,
                 MOCK_SALE_ID_P,
                 value_ - 1,
                 MOCK_SALE_PRICE,
@@ -119,7 +119,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         // === act ===
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.WrongValueSentForMintError.selector,
+                MezzanotteSale.WrongValueSentForMintError.selector,
                 MOCK_SALE_ID_P,
                 value_ + 1,
                 MOCK_SALE_PRICE,
@@ -139,7 +139,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         // === act ===
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.MaximumSaleLimitReachedError.selector, MOCK_SALE_ID_P, user_, MOCK_SALE_LIMIT
+                MezzanotteSale.MaximumSaleLimitReachedError.selector, MOCK_SALE_ID_P, user_, MOCK_SALE_LIMIT
             )
         );
         vm.prank(user_);
@@ -152,7 +152,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.deal(user_, 1337 ether);
         vm.expectRevert(
             abi.encodeWithSelector(
-                MezzanoteSale.MaximumSaleLimitReachedError.selector, MOCK_SALE_ID_P, user_, MOCK_SALE_LIMIT
+                MezzanotteSale.MaximumSaleLimitReachedError.selector, MOCK_SALE_ID_P, user_, MOCK_SALE_LIMIT
             )
         );
         vm.prank(user_);
@@ -170,7 +170,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
             _saleMint(MOCK_SALE_ID_P, vm.addr(i + 1), 0, 1, MOCK_SALE_PRICE, new bytes32[](0));
         }
 
-        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.MaximumTotalMintSupplyReachedError.selector));
+        vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.MaximumTotalMintSupplyReachedError.selector));
         mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE }(MOCK_SALE_ID_P, user_, 1);
     }
 
@@ -189,7 +189,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
 
         // === act ===
         vm.prank(user_);
-        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.MaximumSaleMintSupplyReachedError.selector, MOCK_SALE_ID));
+        vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.MaximumSaleMintSupplyReachedError.selector, MOCK_SALE_ID));
         mezzanote.publicSaleMint{ value: MOCK_SALE_PRICE }(MOCK_SALE_ID, user_, 1);
     }
 
@@ -224,7 +224,7 @@ contract MezzanoteSale_SaleMint is MezzanoteSaleFixture {
         vm.warp(MOCK_SALE_ID_P);
 
         // === act ===
-        vm.expectRevert(MezzanoteSale.ZeroAddressError.selector);
+        vm.expectRevert(MezzanotteSale.ZeroAddressError.selector);
         mezzanote.publicSaleMint(MOCK_SALE_ID_P, user_, 1);
     }
 }

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@forge-std/Script.sol";
 
-import "src/MezzanoteSale.sol";
+import "src/MezzanotteSale.sol";
 
 contract DeploymentScript is Script {
     /// @notice Change these constants to your desired values
@@ -31,7 +31,7 @@ contract DeploymentScript is Script {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
         // deploy MezzanoteSale contract
-        new MezzanoteSale(
+        new MezzanotteSale(
             DESIRED_TOKEN_ADDRESS,                                        
             SALE_START, 
             whitelistRoot_,

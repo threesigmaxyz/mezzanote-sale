@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import "./utils/MezzanoteSaleFixture.sol";
+import "./utils/MezzanotteSaleFixture.sol";
 import "./utils/MockToken.sol";
 import "./utils/strings.sol";
 
-contract MezzanoteSale_Other is MezzanoteSaleFixture {
+contract MezzanotteSale_Other is MezzanotteSaleFixture {
     using strings for *;
 
     function test_constructor() public {
@@ -17,7 +17,7 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
 
         // Check added sales
         // Whitelist sale
-        MezzanoteSale.Sale memory sale = mezzanote.getSale(0);
+        MezzanotteSale.Sale memory sale = mezzanote.getSale(0);
         assertEq(sale.start, MOCK_SALE_W_START);
         assertEq(sale.finish, MOCK_SALE_W_FINISH);
         assertEq(sale.price, MOCK_SALE_PRICE);
@@ -27,7 +27,7 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
         assertEq(sale.maxMint, 0);
 
         // Public sale
-        MezzanoteSale.Sale memory sale2 = mezzanote.getSale(1);
+        MezzanotteSale.Sale memory sale2 = mezzanote.getSale(1);
         assertEq(sale2.start, MOCK_SALE_P_START);
         assertEq(sale2.finish, MOCK_SALE_P_FINISH);
         assertEq(sale2.price, MOCK_SALE_PRICE);
@@ -138,7 +138,7 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
         uint256 newMaxMint_ = MAX_MINT;
 
         // === act ===
-        vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.StaleMaxMintUpdateError.selector));
+        vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.StaleMaxMintUpdateError.selector));
 
         vm.prank(owner_);
         mezzanote.setMaxMint(newMaxMint_);
@@ -199,7 +199,7 @@ contract MezzanoteSale_Other is MezzanoteSaleFixture {
             if (newMaxMint_ < numberOfSales_ + STARTING_ID) loggedNewMaxMint = numberOfSales_ + STARTING_ID;
             emit LogSetMaxMint(MAX_MINT, loggedNewMaxMint);
         } else {
-            vm.expectRevert(abi.encodeWithSelector(MezzanoteSale.StaleMaxMintUpdateError.selector));
+            vm.expectRevert(abi.encodeWithSelector(MezzanotteSale.StaleMaxMintUpdateError.selector));
         }
 
         vm.prank(getOwner());

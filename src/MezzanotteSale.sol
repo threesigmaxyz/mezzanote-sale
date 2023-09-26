@@ -11,7 +11,7 @@ import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /// @title Mezzanote Sales contract
 /// @notice This contract mints Mezanote NFTs on sales started and parametrized by the owner.
-contract MezzanoteSale is Ownable {
+contract MezzanotteSale is Ownable {
     //
     // Using Statements
     //
