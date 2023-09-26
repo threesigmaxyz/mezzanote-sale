@@ -250,7 +250,7 @@ contract MezzanoteSale is Ownable {
         bytes32 root_,
         bool hasMaxMint_,
         uint40 maxMint_
-    ) private onlyOwner {
+    ) public onlyOwner {
         // sale Id does not matter when adding a sale
         _validateSaleParams(start_, finish_, whitelist_, root_, hasMaxMint_, maxMint_);
 
