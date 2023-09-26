@@ -3,9 +3,9 @@ pragma solidity ^0.8.13;
 
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "./utils/MezzanoteSaleFixture.sol";
+import "./utils/MezzanotteSaleFixture.sol";
 
-contract MezzanoteSale_Snapshot is MezzanoteSaleFixture {
+contract MezzanoteSale_Snapshot is MezzanotteSaleFixture {
     address constant TEST_ADDRESS1 = 0x243d558472eF7030aFe3675Bb0a6f9Fb7cE39E13;
     address constant TEST_ADDRESS2 = 0x8b82D758a95c84Bc5476244f91e9AC6478d2a8B0;
     address constant TEST_ADDRESS3 = 0x4577fcfB0642afD21b5f2502753ED6D497B830E9;
